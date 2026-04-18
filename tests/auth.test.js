@@ -1,9 +1,22 @@
+import { jest } from '@jest/globals'; 
 import request from "supertest";
+import mongoose from "mongoose";
 import app from "../src/app.js";
+import User from "../src/models/User.js";
+
+// Increase timeout for Atlas connection
+jest.setTimeout(30000); 
 
 describe("Auth Routes", () => {
+  // Cleanup before and after tests
+  beforeAll(async () => {
+    await User.deleteMany({ email: "test@example.com" });
+  });
 
-  let token;
+  afterAll(async () => {
+    // Close the connection so Jest can exit properly
+    await mongoose.connection.close();
+  });
 
   it("should register a user", async () => {
     const res = await request(app)
@@ -28,8 +41,5 @@ describe("Auth Routes", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body.token).toBeDefined();
-
-    token = res.body.token;
   });
-
 });
